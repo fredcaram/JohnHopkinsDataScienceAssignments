@@ -1,0 +1,60 @@
+K Nearest Neighbors example
+========================================================
+author: Frederico Caram
+date: 02-28-2016
+
+Project
+========================================================
+
+This project is part of the Coursera Data Products Course Assignment. In order to show the understanding of using shiny to build a web application, and using RPresentation to explain
+the application.
+
+The application is hosted in the follwing address: https://fredcaram.shinyapps.io/knearest_neighbors_example/
+
+Exploratory Analysis
+========================================================
+
+```{r, echo=FALSE}
+library(datasets)
+library(ggplot2)
+tg <- ToothGrowth
+ggplot(data = tg, aes(factor(dose), len)) + geom_boxplot(aes(fill = factor(supp))) + scale_fill_discrete(name="Supplemet Type") +
+labs(x = "Dose", y = "Tooth Length")
+```
+
+Statistical Analysis
+========================================================
+
+```{r, echo=FALSE}
+filter1<-tg[tg$supp=='VC' & tg$dose=='0.5',"len"]
+filter2<-tg[tg$supp=='OJ' & tg$dose=='0.5',"len"]
+t<-t.test(filter1,filter2,paired=FALSE,var.equal=FALSE)
+conf1 <- t$conf.int[1:2]
+filter1<-tg[tg$supp=='VC' & tg$dose=='1',"len"]
+filter2<-tg[tg$supp=='OJ' & tg$dose=='1',"len"]
+t<-t.test(filter1,filter2,paired=FALSE,var.equal=FALSE)
+conf2 <- t$conf.int[1:2]
+filter1<-tg[tg$supp=='VC' & tg$dose=='2',"len"]
+filter2<-tg[tg$supp=='OJ' & tg$dose=='2',"len"]
+t<-t.test(filter1,filter2,paired=FALSE,var.equal=FALSE)
+conf3 <- t$conf.int[1:2]
+```
+
+Confidence Interval for the same dosage level between different supplements
+- Dose 0.5 VC VS OG:
+```{r, echo=FALSE}
+conf1
+```
+- Dose 1.0 VC VS OG:
+```{r, echo=FALSE}
+conf2
+```
+- Dose 2.0 VC VS OG:
+```{r, echo=FALSE}
+conf3
+```
+
+Conclusion
+========================================================
+
+When considering dose levels AND supplement types, OJ creates longer teeth than VC at dose levels of 0.5 mg and 1.0 mg, but at dose levels of 2.0 mg, there is no significant difference in teeth length between the two supplement types.

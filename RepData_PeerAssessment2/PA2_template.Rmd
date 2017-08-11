@@ -1,0 +1,113 @@
+---
+title: "Consequences of weather events in the US between 1950 and 2011"
+output: html_document
+---
+
+##SYNOPSIS
+In this report, we are going to analyze NOAA database storm data, containing weather events and their consequences, for the populational damage, we consider the variables fatalities and injuries, while for the economic damage we use the property and crop damages. It was found that the events which caused most number of fatalities or injuries were Tornados, Excessive Heat and TSTM Wind. While Floods, Hurricanes and Tornados were the most damaging to the economy.
+
+##DATA PROCESSING
+
+Load the plyr and reshape packages to help with the data processing
+```{r}
+library(plyr)
+library(reshape2)
+```
+
+
+Download NOAA Storm Database
+
+```{r}
+if (!file.exists("StormData.csv.bz2")){
+    setInternet2(use = TRUE)
+    download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2", "StormData.csv.bz2")
+}
+```
+
+Read the data into storm_data variable
+```{r, cache=TRUE}
+storm_data <- read.csv(bzfile("StormData.csv.bz2"))
+```
+
+
+Normalize the economic data
+```{r}
+treated_data <- mutate(storm_data, 
+                       PROPDMG = (ifelse(toupper(PROPDMGEXP) == 'K', PROPDMG * 10^3, 
+                           ifelse(toupper(PROPDMGEXP) == 'M', PROPDMG * 10^6,
+                           ifelse(toupper(PROPDMGEXP) == 'B', PROPDMG * 10^9,
+                            PROPDMG)))
+                           ))
+treated_data <- mutate(treated_data,
+                       CROPDMG = (ifelse(toupper(CROPDMGEXP) == 'K', CROPDMG * 10^3, 
+                           ifelse(toupper(CROPDMGEXP) == 'M', CROPDMG * 10^6,
+                           ifelse(toupper(CROPDMGEXP) == 'B', CROPDMG * 10^9,
+                            CROPDMG)))
+                           ))
+```
+
+
+Aggregate the data by event type summing Fatalities And Injuries
+```{r}
+harmful_events <- aggregate(cbind(FATALITIES, INJURIES, PROPDMG, CROPDMG, FATALITIES + INJURIES, PROPDMG + CROPDMG) ~ EVTYPE, data = treated_data, sum)
+names(harmful_events)[6] <- "POPDMG"
+names(harmful_events)[7] <- "ECONDMG"
+```
+
+Gets the data from the 10 most harmful events for the population, give pretty names to the events and melt it to use as facets on the plot
+```{r}
+top_pop_damage <- head(harmful_events[order(harmful_events$POPDMG, decreasing = TRUE), c("EVTYPE", "FATALITIES", "INJURIES", "POPDMG")], 10)
+
+names(top_pop_damage) <- c("Event", "Fatalities", "Injuries", "Total")
+
+top_pop_damage_melted <- melt(data = top_pop_damage, id.vars = c("Event"))
+
+top_pop_damage
+```
+
+Gets the data from the 10 most harmful events for the economy, give pretty names to the events and melt it to use as facets on the plot
+```{r}
+top_economic_damage <- head(harmful_events[order(harmful_events$ECONDMG, decreasing = T), c("EVTYPE", "PROPDMG", "CROPDMG", "ECONDMG")], 10)
+
+names(top_economic_damage) <- c("Event", "Property Damage", "Crop Damage", "Total")
+
+top_economic_damage_melted <- melt(data = top_economic_damage, id.vars = c("Event"))
+
+top_economic_damage
+```
+
+
+##RESULTS
+
+Loads the ggplot2 library for the plots
+```{r}
+library(ggplot2)
+```
+
+
+Displays the 10 most harmful population events 
+```{r}
+ggplot(data = top_pop_damage_melted,
+        aes(x = reorder(Event, value), y = value)) + 
+        facet_grid(variable ~ .) +
+        coord_flip() +
+        geom_bar(fill = "blue", stat = "identity") + 
+        xlab("Event") + 
+        ylab("Total Population damage (Number of persons)") + 
+        ggtitle("The most harmful events by population")
+```
+
+Tornadoes cause the largest number of deaths and injuries among the studied events. There are more than 5,000 deaths and more than 90,000 injuries in the last 60 years in US, due to tornadoes. Excessive heat and TSTM Wind follows on the list.
+
+Displays the 10 most harmful economic events 
+```{r}
+ggplot(data = top_economic_damage_melted,
+        aes(x = reorder(Event, value), y = (value/ 10 ^ 6))) + 
+        facet_grid(variable ~ .) +
+        coord_flip() +
+        geom_bar(fill = "blue", stat = "identity") + 
+        xlab("Event") + 
+        ylab("Total Economy damage (In Million $)") + 
+        ggtitle("The most harmful events in the economy")
+```
+The most harmful event in terms of economic damage are the Floods, followed by the Tornados and Hurricanes/Typhons.

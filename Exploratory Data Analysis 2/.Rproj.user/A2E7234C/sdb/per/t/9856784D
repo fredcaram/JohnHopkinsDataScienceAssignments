@@ -1,0 +1,18 @@
+{
+    "contents" : "## Reads the data\nNEI <- readRDS(\"./data/summarySCC_PM25.rds\")\nSCC <- readRDS(\"./data/Source_Classification_Code.rds\")\n\n## Filter data from baltimore\nbaltimore_data <- NEI[NEI$fips==\"24510\", ]\n\n## Filter data from coal combustion-related source\n## The chocice for the filter was based on the forum discussions and\n## as can be seen on the filtered_scc data below, it filters mainly the\n## mobile sources with gasoline and diesel combustible\nfiltered_scc <- SCC[grep(\".*Vehicles.*\", SCC$EI.Sector), ]\n\n## Merges the data\nclassified_NEI <- merge(baltimore_data, filtered_scc, by=\"SCC\")\n\n## aggregate the data by year\npm_by_year <- with(classified_NEI,{ aggregate(x = Emissions, by = list(year = year), FUN = sum)})\n\n## Plot the chart\nplot(pm_by_year$year, pm_by_year$x/1000, type = \"l\", xlab = \"Years\", ylab = \"Emission\", main = \"Emission by year for Motor Vehicles in Baltimore\", yaxt = \"n\")\n\n## Correct the Y axis label\ny_label <-paste0(axTicks(2),\"K\")\naxis(2,at=axTicks(2), labels=y_label)\n\n## Save the plot\ndev.copy(png, file=\"plot5.png\")\ndev.off()",
+    "created" : 1439985141632.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2056700617",
+    "id" : "9856784D",
+    "lastKnownWriteTime" : 1440014038,
+    "path" : "~/R/Projects/Exploratory Data Analysis 2/plot5.R",
+    "project_path" : "plot5.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 8,
+    "source_on_save" : false,
+    "type" : "r_source"
+}

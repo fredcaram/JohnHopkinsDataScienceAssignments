@@ -1,0 +1,18 @@
+{
+    "contents" : "## Reads the data\nNEI <- readRDS(\"./data/summarySCC_PM25.rds\")\nSCC <- readRDS(\"./data/Source_Classification_Code.rds\")\n\n## Filter data from coal combustion-related source\n## The choice was made based on the Major Source Sector Fuel Combustion and all\n## the Detailed Category Names that contains Coal\n## Information source: http://www.epa.gov/air/emissions/basic.htm\nfiltered_scc <- SCC[grep(\"Fuel Comb.*Coal\", SCC$EI.Sector), ]\n\n## Merges the data\nclassified_NEI <- merge(NEI, filtered_scc, by=\"SCC\")\n\n## aggregate the data by year\npm_by_year_coal <- with(classified_NEI,{ aggregate(x = Emissions, by = list(year = year), FUN = sum)})\n\n## Plot the chart\nplot(pm_by_year_coal$year, pm_by_year_coal$x/1000, type = \"l\", xlab = \"Years\", ylab = \"Emission\", main = \"Emission by year for coal combustion\", yaxt = \"n\")\n\n## Correct the Y axis label\ny_label <-paste0(axTicks(2),\"K\")\naxis(2,at=axTicks(2), labels=y_label)\n\n## Save the plot\ndev.copy(png, file=\"plot4.png\")\ndev.off()",
+    "created" : 1439937782353.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3318792839",
+    "id" : "94B867D7",
+    "lastKnownWriteTime" : 1440003035,
+    "path" : "~/R/Projects/Exploratory Data Analysis 2/plot4.R",
+    "project_path" : "plot4.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "type" : "r_source"
+}

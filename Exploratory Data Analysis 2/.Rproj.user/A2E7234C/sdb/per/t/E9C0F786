@@ -1,0 +1,18 @@
+{
+    "contents" : "require(\"ggplot2\")\n\n## Defines the norm function for posterior use\nnorm_vec <- function(x) sqrt(sum(x^2))\n\n## Reads the data\nNEI <- readRDS(\"./data/summarySCC_PM25.rds\")\nSCC <- readRDS(\"./data/Source_Classification_Code.rds\")\n\ncompared_cities <- data.frame(fips = c(\"24510\",'06037'), city_name = c('Baltimore', 'LA'))\n\n## Filter data from baltimore and LA\ncities_data <- merge(NEI, compared_cities, by=\"fips\")\n\n## Filter data from coal combustion-related source\n## The choice for the filter was based on the forum discussions and\n## as can be seen on the filtered_scc data below, it filters mainly the\n## mobile sources with gasoline and diesel combustible\nfiltered_scc <- SCC[grep(\".*Vehicles.*\", SCC$EI.Sector), ]\n\n## Merges the data\nclassified_NEI <- merge(cities_data, filtered_scc, by=\"SCC\")\n\n## aggregate the data by year\npm_by_year <- with(classified_NEI,{ \n                    aggregate(x = Emissions, \n                              by = list(year = year, city_name = city_name), \n                              FUN = sum)})\n## Normalizes the data by the first year emisison, so we can see the variation\npm_by_year$norm_by_first_year <- apply(pm_by_year, \n      1, \n      function(x){\n        as.numeric(x[\"x\"])/\n          pm_by_year[pm_by_year$city_name==x[\"city_name\"]&pm_by_year$year==\"1999\",\"x\"]\n      })\n\n## Plot the chart\nqplot(year, norm_by_first_year, data = pm_by_year, facets = . ~ city_name, geom = \"line\", main = \"Variation in Emission by Year between cities\", xlab = \"Years\", ylab = \"Emission / First Year Emisison\")\n\n## Save the plot\nggsave(filename = \"plot6.png\", width = 7, height = 4)",
+    "created" : 1439987891371.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "46257969",
+    "id" : "E9C0F786",
+    "lastKnownWriteTime" : 1440015677,
+    "path" : "~/R/Projects/Exploratory Data Analysis 2/plot6.R",
+    "project_path" : "plot6.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 10,
+    "source_on_save" : false,
+    "type" : "r_source"
+}

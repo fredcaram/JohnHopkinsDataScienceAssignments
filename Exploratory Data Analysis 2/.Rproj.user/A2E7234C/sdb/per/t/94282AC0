@@ -1,0 +1,18 @@
+{
+    "contents" : "## Reads the data\nNEI <- readRDS(\"./data/summarySCC_PM25.rds\")\nSCC <- readRDS(\"./data/Source_Classification_Code.rds\")\n\n## Filter data from baltimore and aggregate the data by year\nbaltimore_data <- NEI[NEI$fips==\"24510\", ]\npm_by_year_in_baltimore <- aggregate(x = baltimore_data$Emissions, by = list(year = baltimore_data$year), FUN = sum)\n\n## Plot the chart\nplot(pm_by_year_in_baltimore$year, pm_by_year_in_baltimore$x/1000, type = \"l\", xlab = \"Years\", ylab = \"Emission\", main = \"Emission by year in Baltimore\", yaxt = \"n\")\n\n## Correct the Y axis label\ny_label <-paste0(axTicks(2),\"K\")\naxis(2,at=axTicks(2), labels=y_label)\n\n## Save the plot\ndev.copy(png, file=\"plot2.png\")\ndev.off()",
+    "created" : 1440007733189.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1873157444",
+    "id" : "94282AC0",
+    "lastKnownWriteTime" : 1440002844,
+    "path" : "~/R/Projects/Exploratory Data Analysis 2/plot2.R",
+    "project_path" : "plot2.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "type" : "r_source"
+}
